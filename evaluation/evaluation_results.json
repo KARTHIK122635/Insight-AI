@@ -1,0 +1,7 @@
+{
+  "total_cases": 6,
+  "sql_accuracy_pct": 100.0,
+  "chart_accuracy_pct": 83.3,
+  "hallucination_rate_pct": 0.0,
+  "avg_latency_ms": 9529.9
+}

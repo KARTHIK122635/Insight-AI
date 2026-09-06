@@ -1,0 +1,62 @@
+[
+  {
+    "id": "ecom_01",
+    "dataset": "ecommerce_01",
+    "question": "Which region generated the most sales?",
+    "expected_operation": "group_by",
+    "expected_dimension": "region",
+    "expected_measure": "sales",
+    "expected_chart": "bar",
+    "expected_sql_keywords": ["GROUP BY", "SUM(sales)", "ORDER BY", "DESC"]
+  },
+  {
+    "id": "ecom_02",
+    "dataset": "ecommerce_01",
+    "question": "How have sales trended over time?",
+    "expected_operation": "time_series",
+    "expected_dimension": "order_date",
+    "expected_measure": "sales",
+    "expected_chart": "line",
+    "expected_sql_keywords": ["GROUP BY", "SUM(sales)"]
+  },
+  {
+    "id": "ecom_03",
+    "dataset": "ecommerce_01",
+    "question": "What is the breakdown of sales by category?",
+    "expected_operation": "composition",
+    "expected_dimension": "category",
+    "expected_measure": "sales",
+    "expected_chart": "pie",
+    "expected_sql_keywords": ["category", "SUM(sales)"]
+  },
+  {
+    "id": "ecom_04",
+    "dataset": "ecommerce_01",
+    "question": "Which are the top 5 products by total profit?",
+    "expected_operation": "ranking",
+    "expected_dimension": "product_name",
+    "expected_measure": "profit",
+    "expected_chart": "bar",
+    "expected_sql_keywords": ["GROUP BY", "SUM(profit)", "ORDER BY", "LIMIT"]
+  },
+  {
+    "id": "saas_01",
+    "dataset": "saas_01",
+    "question": "What is the total MRR by plan tier?",
+    "expected_operation": "group_by",
+    "expected_dimension": "plan_tier",
+    "expected_measure": "mrr",
+    "expected_chart": "bar",
+    "expected_sql_keywords": ["plan_tier", "SUM(mrr)"]
+  },
+  {
+    "id": "saas_02",
+    "dataset": "saas_01",
+    "question": "How has monthly MRR grown over time?",
+    "expected_operation": "time_series",
+    "expected_dimension": "month",
+    "expected_measure": "mrr",
+    "expected_chart": "line",
+    "expected_sql_keywords": ["month", "SUM(mrr)"]
+  }
+]

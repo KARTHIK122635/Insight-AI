@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  insight-ai:
+    build: .
+    container_name: insight-ai-platform
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - HF_TOKEN=${HF_TOKEN}
+      - PRIMARY_MODEL=Qwen/Qwen2.5-Coder-32B-Instruct
+      - FALLBACK_MODEL=Qwen/Qwen2.5-Coder-7B-Instruct
+      - HF_ROUTER_URL=https://router.huggingface.co/v1/chat/completions
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
