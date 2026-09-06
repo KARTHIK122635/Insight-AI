@@ -6,7 +6,7 @@ import FlowControlStepper from './components/FlowControlStepper';
 import WorkspaceHomeView from './views/WorkspaceHomeView';
 import ExecutiveDashboardView from './views/ExecutiveDashboardView';
 import WhatIfAndForecastView from './views/WhatIfAndForecastView';
-import SpatialGestureStudioView from './views/SpatialGestureStudioView';
+import BusinessOpportunitiesView from './views/BusinessOpportunitiesView';
 import StoryDeckView from './views/StoryDeckView';
 import MongoModal from './components/MongoModal';
 import OneLakeModal from './components/OneLakeModal';
@@ -26,16 +26,17 @@ import {
 import * as api from './services/api';
 
 const STUDIO_NAV_ITEMS: NavItem[] = [
-  { id: 'workspace_home', label: 'Workspace Home', icon: 'home', badge: 'Hub' },
-  { id: 'dashboard', label: 'Executive Dashboard', icon: 'layout-dashboard', badge: 'Primary' },
-  { id: 'descriptive_stats', label: 'Descriptive Statistics Lab', icon: 'binary', badge: 'Exploratory' },
-  { id: 'data_cleaning', label: 'Data Cleaning & Wrangling Lab', icon: 'wrench', badge: 'Transform' },
-  { id: 'what_if', label: 'What-If & Forecasting', icon: 'trending-up', badge: 'Simulation' },
-  { id: 'spatial_gestures', label: 'Spatial Gesture Studio', icon: 'move', badge: 'Figma' },
-  { id: 'anomalies', label: 'Anomaly & Outlier Lab', icon: 'alert-triangle', badge: 'Audit' },
-  { id: 'relationships', label: 'Relationship & Correlation Map', icon: 'network' },
-  { id: 'explorer', label: 'Dataset Explorer Grid', icon: 'table' },
-  { id: 'chat', label: 'Artificial Intelligence Analyst', icon: 'message-square' },
+  { id: 'dashboard', label: 'Executive Command Center', icon: 'layout-dashboard', badge: 'Briefing' },
+  { id: 'growth_opportunities', label: 'Growth & Leakage Radar', icon: 'zap', badge: 'Strategic' },
+  { id: 'what_if', label: 'Scenario & What-If Planner', icon: 'trending-up', badge: 'Simulation' },
+  { id: 'chat', label: 'Executive AI Analyst', icon: 'message-square', badge: 'Decision' },
+  { id: 'story_deck', label: 'Board-Ready Presentation', icon: 'presentation', badge: 'Deck' },
+  { id: 'workspace_home', label: 'Data Catalog & Connectors', icon: 'database', badge: 'Catalog' },
+  { id: 'descriptive_stats', label: 'Deep Metric Diagnostics', icon: 'binary' },
+  { id: 'anomalies', label: 'Risk & Outlier Auditing', icon: 'alert-triangle' },
+  { id: 'relationships', label: 'Drivers & Correlation Map', icon: 'network' },
+  { id: 'data_cleaning', label: 'Data Integrity & Cleaning', icon: 'wrench' },
+  { id: 'explorer', label: 'Raw Data Explorer', icon: 'table' },
 ];
 
 const DEFAULT_WHAT_IF_PARAMS = {
@@ -87,6 +88,12 @@ export const App: React.FC = () => {
   const [storyData, setStoryData] = useState<any>(null);
   const [storyLoading, setStoryLoading] = useState<boolean>(false);
   const [storyError, setStoryError] = useState<string | null>(null);
+
+  // Business Intelligence & Strategic Decision State
+  const [executiveBriefing, setExecutiveBriefing] = useState<any>(null);
+  const [briefingLoading, setBriefingLoading] = useState<boolean>(false);
+  const [opportunitiesData, setOpportunitiesData] = useState<any>(null);
+  const [opportunitiesLoading, setOpportunitiesLoading] = useState<boolean>(false);
 
   // What-If & Forecasting State
   const [whatIfParams, setWhatIfParams] = useState(DEFAULT_WHAT_IF_PARAMS);
@@ -177,6 +184,36 @@ export const App: React.FC = () => {
     }
   }, [activeDatasetId]);
 
+  const loadExecutiveBriefing = useCallback(async (id: string) => {
+    if (!id) return;
+    setBriefingLoading(true);
+    try {
+      const data = await api.fetchExecutiveBriefing(id);
+      setExecutiveBriefing(data);
+      return data;
+    } catch (err: any) {
+      console.error('Failed to load executive briefing:', err);
+      return null;
+    } finally {
+      setBriefingLoading(false);
+    }
+  }, []);
+
+  const loadOpportunities = useCallback(async (id: string) => {
+    if (!id) return;
+    setOpportunitiesLoading(true);
+    try {
+      const data = await api.fetchBusinessOpportunities(id);
+      setOpportunitiesData(data);
+      return data;
+    } catch (err: any) {
+      console.error('Failed to load business opportunities:', err);
+      return null;
+    } finally {
+      setOpportunitiesLoading(false);
+    }
+  }, []);
+
   const loadMongoStatus = useCallback(async () => {
     try {
       const data = await api.fetchMongoStatus();
@@ -198,6 +235,8 @@ export const App: React.FC = () => {
       setDashboardData(null);
       setWhatIfResult(null);
       setForecastData(null);
+      setExecutiveBriefing(null);
+      setOpportunitiesData(null);
       setRefreshToast('Private browser session closed.');
       setTimeout(() => setRefreshToast(null), 3500);
     }
@@ -234,7 +273,8 @@ export const App: React.FC = () => {
     domain: activeDataset.domain || 'Financial Services & Banking',
     rows: activeDataset.rows_count || 150,
     columns: activeDataset.columns_count || 12,
-  } : null, [activeDataset]);
+    healthScore: executiveBriefing?.health_score,
+  } : null, [activeDataset, executiveBriefing?.health_score]);
 
   // Load dashboard
   const loadDashboard = useCallback(async (id: string, currentSlicers = slicers) => {
@@ -346,6 +386,13 @@ export const App: React.FC = () => {
       if ((!dashboardData || dashboardData.dataset_id !== activeDatasetId) && !dashboardLoading) {
         loadDashboard(activeDatasetId);
       }
+      if (!executiveBriefing && !briefingLoading) {
+        loadExecutiveBriefing(activeDatasetId);
+      }
+    } else if (activeTab === 'growth_opportunities') {
+      if (!opportunitiesData && !opportunitiesLoading) {
+        loadOpportunities(activeDatasetId);
+      }
     } else if (activeTab === 'what_if' && !whatIfResult && !whatIfLoading) {
       loadWhatIf(activeDatasetId);
       loadForecast(activeDatasetId);
@@ -364,7 +411,7 @@ export const App: React.FC = () => {
     } else if (activeTab === 'story_deck' && !storyData && !storyLoading) {
       loadStory(activeDatasetId);
     }
-  }, [activeTab, activeDatasetId, dashboardData, dashboardLoading, whatIfResult, whatIfLoading, statsData, correlationData, anomalyData, explorerData.rows.length, storyData, storyLoading, loadDashboard, loadWhatIf, loadForecast, loadStory]);
+  }, [activeTab, activeDatasetId, dashboardData, dashboardLoading, executiveBriefing, briefingLoading, opportunitiesData, opportunitiesLoading, whatIfResult, whatIfLoading, statsData, correlationData, anomalyData, explorerData.rows.length, storyData, storyLoading, loadDashboard, loadExecutiveBriefing, loadOpportunities, loadWhatIf, loadForecast, loadStory]);
 
   // Universal Refresh
   const handleUniversalRefresh = async () => {
@@ -374,6 +421,8 @@ export const App: React.FC = () => {
       if (activeDatasetId) {
         await Promise.all([
           loadDashboard(activeDatasetId),
+          loadExecutiveBriefing(activeDatasetId),
+          activeTab === 'growth_opportunities' ? loadOpportunities(activeDatasetId) : Promise.resolve(),
           activeTab === 'what_if' ? loadWhatIf(activeDatasetId) : Promise.resolve(),
           activeTab === 'what_if' ? loadForecast(activeDatasetId) : Promise.resolve(),
           activeTab === 'descriptive_stats' ? api.fetchDescriptiveStats(activeDatasetId).then(setStatsData) : Promise.resolve(),
@@ -404,6 +453,8 @@ export const App: React.FC = () => {
       if (res.dataset_id) {
         setActiveDatasetId(res.dataset_id);
         setDashboardData(null);
+        setExecutiveBriefing(null);
+        setOpportunitiesData(null);
         const measures = res.summary?.measures || [];
         const dimensions = res.summary?.dimensions || [];
         const timeColumn = res.summary?.temporal_columns?.[0];
@@ -421,6 +472,8 @@ export const App: React.FC = () => {
         }]);
         setActiveTab('dashboard');
         loadDashboard(res.dataset_id);
+        loadExecutiveBriefing(res.dataset_id);
+        loadOpportunities(res.dataset_id);
       }
     } catch (err: any) {
       alert(`Upload error: ${err.message}`);
@@ -597,7 +650,10 @@ export const App: React.FC = () => {
             setWhatIfResult(null);
             setForecastData(null);
             setStatsData(null);
+            setExecutiveBriefing(null);
+            setOpportunitiesData(null);
             loadDashboard(id);
+            loadExecutiveBriefing(id);
           }}
           onOpenUpload={() => filePickerRef.current?.click()}
           onOpenMongoModal={() => setShowMongoModal(true)}
@@ -674,6 +730,18 @@ export const App: React.FC = () => {
               loading={dashboardLoading}
               error={dashboardError}
               onRetry={() => activeDatasetId && loadDashboard(activeDatasetId)}
+              executiveBriefing={executiveBriefing}
+              onNavigateToOpportunities={() => setActiveTab('growth_opportunities')}
+            />
+          )}
+
+          {activeTab === 'growth_opportunities' && (
+            <BusinessOpportunitiesView
+              datasetMeta={datasetMeta}
+              opportunitiesData={opportunitiesData}
+              loading={opportunitiesLoading}
+              onRefresh={() => activeDatasetId && loadOpportunities(activeDatasetId)}
+              onOpenWhatIf={() => setActiveTab('what_if')}
             />
           )}
 
@@ -705,13 +773,6 @@ export const App: React.FC = () => {
               onRecalculateForecast={(p) => loadForecast(activeDatasetId, p || forecastPeriods)}
               whatIfError={whatIfError}
               forecastError={forecastError}
-            />
-          )}
-
-          {activeTab === 'spatial_gestures' && (
-            <SpatialGestureStudioView
-              datasetMeta={datasetMeta}
-              activeDatasetId={activeDatasetId}
             />
           )}
 

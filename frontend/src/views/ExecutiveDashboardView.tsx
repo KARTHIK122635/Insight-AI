@@ -14,6 +14,23 @@ interface ExecutiveDashboardViewProps {
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
+  executiveBriefing?: {
+    health_score?: number;
+    health_label?: string;
+    health_status?: 'healthy' | 'stable' | 'warning' | 'critical';
+    domain?: string;
+    summary?: string;
+    strategic_takeaways?: string[];
+    action_items?: string[];
+    metrics?: {
+      total_revenue?: number;
+      total_profit?: number;
+      margin_pct?: number;
+      growth_pct?: number;
+      total_records?: number;
+    };
+  } | null;
+  onNavigateToOpportunities?: () => void;
 }
 
 export const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
@@ -27,7 +44,9 @@ export const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
   onDeleteCustomChart,
   loading = false,
   error = null,
-  onRetry
+  onRetry,
+  executiveBriefing,
+  onNavigateToOpportunities
 }) => {
   const [drilldownChart, setDrilldownChart] = useState<any>(null);
 
@@ -109,6 +128,105 @@ export const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* 0. Executive Strategic Briefing Hero Banner */}
+      {executiveBriefing && (
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-500/25 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-indigo-500/20">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+                <Icon name="sparkles" className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Executive Strategic Briefing • {executiveBriefing.domain || 'Enterprise Portfolio'}</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                C-Suite Decision &amp; Commercial Health Review
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                {executiveBriefing.summary || 'Vectorized DuckDB analytics scan completed across all business dimensions.'}
+              </p>
+            </div>
+
+            {/* Health Score Pill / Gauge */}
+            <div className="flex items-center gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shrink-0 shadow-inner">
+              <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <span className={`text-2xl font-black font-mono ${
+                  (executiveBriefing.health_score ?? 75) >= 80 ? 'text-emerald-400' :
+                  (executiveBriefing.health_score ?? 75) >= 65 ? 'text-indigo-400' :
+                  (executiveBriefing.health_score ?? 75) >= 50 ? 'text-amber-400' : 'text-rose-400'
+                }`}>
+                  {executiveBriefing.health_score ?? 75}
+                </span>
+                <span className="absolute bottom-1 text-[8px] font-mono text-slate-500 uppercase tracking-widest font-bold">/100</span>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
+                  Commercial Health
+                </span>
+                <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                  (executiveBriefing.health_score ?? 75) >= 80 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                  (executiveBriefing.health_score ?? 75) >= 65 ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' :
+                  (executiveBriefing.health_score ?? 75) >= 50 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                  'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                }`}>
+                  {executiveBriefing.health_label || 'Stable Operations'}
+                </span>
+                {onNavigateToOpportunities && (
+                  <button
+                    onClick={onNavigateToOpportunities}
+                    className="block text-[11px] text-indigo-400 hover:text-indigo-300 hover:underline font-semibold mt-1 text-left"
+                  >
+                    View Growth &amp; Leakage Radar →
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Strategic Takeaways & Action Items Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* 3 Strategic Takeaways */}
+            <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center space-x-2 text-xs font-bold text-slate-300">
+                <Icon name="award" className="w-4 h-4 text-indigo-400" />
+                <span className="tracking-wide uppercase text-[11px]">3 Executive Takeaways</span>
+              </div>
+              <div className="space-y-2.5">
+                {(executiveBriefing.strategic_takeaways || []).map((t: string, i: number) => (
+                  <div key={i} className="flex items-start space-x-2.5 text-xs text-slate-300 leading-relaxed">
+                    <span className="w-5 h-5 rounded-md bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-mono font-bold flex items-center justify-center shrink-0 text-[10px] mt-0.5">
+                      {i + 1}
+                    </span>
+                    <span dangerouslySetInnerHTML={{
+                      __html: t.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
+                    }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3 Prioritized Action Items */}
+            <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center space-x-2 text-xs font-bold text-slate-300">
+                <Icon name="target" className="w-4 h-4 text-emerald-400" />
+                <span className="tracking-wide uppercase text-[11px]">Prioritized Decision Levers</span>
+              </div>
+              <div className="space-y-2.5">
+                {(executiveBriefing.action_items || []).map((a: string, i: number) => (
+                  <div key={i} className="flex items-start space-x-2.5 text-xs text-slate-300 leading-relaxed">
+                    <span className="w-5 h-5 rounded-md bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-mono font-bold flex items-center justify-center shrink-0 text-[10px] mt-0.5">
+                      <Icon name="check" className="w-3 h-3" />
+                    </span>
+                    <span dangerouslySetInnerHTML={{
+                      __html: a.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
+                    }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Slicers & Global Filter Bar */}
       {filters.length > 0 && (
         <div className="bg-darkpanel border border-darkborder rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

@@ -128,6 +128,15 @@ export async function exportStory(id: string) {
   return response.blob();
 }
 
+export async function fetchExecutiveBriefing(id: string) {
+  return requestJson(`/api/insights/executive_briefing/${id}`, { headers: getAuthHeaders() });
+}
+
+export async function fetchBusinessOpportunities(id: string) {
+  return requestJson(`/api/insights/business_opportunities/${id}`, { headers: getAuthHeaders() });
+}
+
+
 export async function buildCustomChart(request: {
   dataset_id: string;
   dimension: string;

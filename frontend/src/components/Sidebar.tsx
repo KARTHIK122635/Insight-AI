@@ -167,8 +167,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="text-xs font-bold text-white truncate max-w-[120px]" title={datasetMeta.name}>
                 {datasetMeta.name}
               </span>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-semibold">
-                100/100
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border font-semibold ${
+                (datasetMeta.healthScore ?? 100) >= 80 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' :
+                (datasetMeta.healthScore ?? 100) >= 65 ? 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' :
+                (datasetMeta.healthScore ?? 100) >= 50 ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
+                'text-rose-400 bg-rose-500/10 border-rose-500/20'
+              }`}>
+                {datasetMeta.healthScore ? `${datasetMeta.healthScore}/100` : '100/100'}
               </span>
             </div>
             <div className="text-[10px] text-indigo-300 mt-1 truncate">

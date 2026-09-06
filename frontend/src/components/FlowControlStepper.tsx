@@ -13,12 +13,12 @@ export const FlowControlStepper: React.FC<FlowControlStepperProps> = ({
   datasetName
 }) => {
   const steps = [
-    { id: 'workspace_home', step: '1', label: 'Ingest Data' },
-    { id: 'descriptive_stats', step: '2', label: 'Audit & Profile' },
-    { id: 'dashboard', step: '3', label: 'Dashboard & Slicers' },
-    { id: 'what_if', step: '4', label: 'What-If Forecasting' },
-    { id: 'spatial_gestures', step: '5', label: 'Spatial Gestures' },
-    { id: 'story_deck', step: '6', label: 'Story Deck' },
+    { id: 'workspace_home', step: '1', label: 'Data Ingest' },
+    { id: 'dashboard', step: '2', label: 'Executive Command' },
+    { id: 'growth_opportunities', step: '3', label: 'Growth & Leakage' },
+    { id: 'what_if', step: '4', label: 'Scenario Planner' },
+    { id: 'chat', step: '5', label: 'AI Business Analyst' },
+    { id: 'story_deck', step: '6', label: 'Board Deck' },
   ];
 
   return (
