@@ -124,12 +124,12 @@ export const App: React.FC = () => {
   }>>([
     {
       role: 'assistant',
-      text: 'Hello! I am your AI Business Analyst powered by DuckDB In-Memory OLAP and Google Gemini reasoning. Ask me any analytical question or click a suggested starter below.',
+      text: 'Hello! I am your AI Business Analyst powered by DuckDB In-Memory OLAP and Google Gemini reasoning. Ask me where to concentrate your business resources to see greater profits, or click a suggested starter below.',
       followups: [
-        '📊 Summarize this dataset',
-        '🏆 What are the top 5 performers?',
         '💡 How can I increase profits?',
-        '📈 Show monthly performance trend'
+        '🎯 Where should I concentrate to grow my business?',
+        '🏆 What are the top performers?',
+        '📊 Summarize this dataset'
       ]
     },
   ]);
@@ -459,16 +459,16 @@ export const App: React.FC = () => {
         const dimensions = res.summary?.dimensions || [];
         const timeColumn = res.summary?.temporal_columns?.[0];
         const suggestions = [
-          'Summarize this dataset',
-          measures[0] && dimensions[0] ? `Show ${measures[0]} by ${dimensions[0]}` : 'Show the most important patterns',
-          timeColumn && measures[0] ? `Show ${measures[0]} over time` : 'Find unusual values',
-          measures.length > 1 ? `Compare ${measures[0]} and ${measures[1]}` : 'What should I investigate first?',
+          '💡 How can I increase profits?',
+          '🎯 Where should I concentrate to grow my business?',
+          '📊 Summarize this dataset',
+          measures[0] && dimensions[0] ? `Show ${measures[0]} by ${dimensions[0]}` : 'What are the top performers?',
         ].filter(Boolean) as string[];
         setChatMessages((prev) => [...prev, {
           role: 'assistant',
-          text: `Your dataset is ready. I found ${res.summary?.total_rows?.toLocaleString?.() || 'the'} rows in the ${res.summary?.domain || 'analytics'} domain. I can explain the data in plain language, find trends, compare groups, identify unusual patterns, and suggest what to investigate next. Choose a question below or ask me naturally.`,
+          text: `Your dataset is ready (${res.summary?.total_rows?.toLocaleString?.() || 'all'} records, ${res.summary?.domain || 'Commercial'} domain). I can advise you on which fields to concentrate on to develop your business, stop margin leakage, and maximize overall profits. Choose a question below or ask me directly.`,
           followups: suggestions,
-          provider: 'InsightAI Personal Assistant',
+          provider: 'InsightAI Business Intelligence Advisor',
         }]);
         setActiveTab('dashboard');
         loadDashboard(res.dataset_id);

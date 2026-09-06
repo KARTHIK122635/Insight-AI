@@ -63,7 +63,34 @@ class FastAnalyticalParser:
                         if c in d.lower():
                             return d
 
-        return None
+    @staticmethod
+    def _is_id_column(col_name: str) -> bool:
+        c = col_name.lower().strip()
+        id_terms = ["_id", "id", "uuid", "guid", "code", "key", "number", "num", "hash", "ssn", "phone", "email"]
+        return any(c == term or c.endswith(term) or c.startswith(term) for term in id_terms)
+
+    @staticmethod
+    def _find_best_business_dimension(dimensions: List[str], temporal_cols: List[str] = None) -> str:
+        temp_set = set(t.lower() for t in (temporal_cols or []))
+        candidates = [
+            d for d in dimensions
+            if d.lower() not in temp_set and "date" not in d.lower() and "time" not in d.lower() and not FastAnalyticalParser._is_id_column(d)
+        ]
+        if not candidates:
+            candidates = [d for d in dimensions if d.lower() not in temp_set and "date" not in d.lower()]
+        if not candidates:
+            return dimensions[0] if dimensions else "category"
+
+        priority_keywords = [
+            "category", "channel", "product", "segment", "region", "market",
+            "mall", "store", "department", "division", "type", "brand", "tier", "gender"
+        ]
+        for kw in priority_keywords:
+            for c in candidates:
+                if kw in c.lower():
+                    return c
+
+        return candidates[0]
 
     @staticmethod
     def match_query(
@@ -73,7 +100,8 @@ class FastAnalyticalParser:
         temporal_cols: List[str],
         table_name: str = "dataset"
     ) -> Optional[Dict[str, Any]]:
-        q = query.lower().strip()
+        cleaned_q = re.sub(r"^[^\w\s]+", "", query).strip().lower()
+        q = cleaned_q if cleaned_q else query.lower().strip()
 
         matched_measure = FastAnalyticalParser._find_matching_measure(q, measures)
         matched_dimension = FastAnalyticalParser._find_matching_dimension(q, dimensions)
@@ -124,20 +152,34 @@ class FastAnalyticalParser:
                 "explanation": "High-level summary of total records and core KPIs."
             }
 
-        # 0b. Actionable Recommendations & Improvement (e.g. "how to increase profits", "recommendations", "opportunities")
-        is_recommendation = any(w in q for w in ["recommend", "improve", "increase", "boost", "advice", "opportunity", "action", "strategy", "maximize"])
+        # 0b. Actionable Recommendations & Improvement (e.g. "how to increase profits", "recommendations", "opportunities", "where to concentrate", "develop business")
+        has_explicit_rank = bool(re.search(r"(?:top|highest|best|bottom|lowest|worst|least)\s+\d+", q))
+        is_recommendation = not has_explicit_rank and any(w in q for w in [
+            "recommend", "improve", "increase", "boost", "advice", "opportunity",
+            "action", "strategy", "maximize", "grow", "concentrate", "focus",
+            "develop", "better profit", "more profit", "greater profit"
+        ])
         if is_recommendation:
-            target_m = matched_measure or (measures[1] if len(measures) > 1 and "profit" in str(measures).lower() else (measures[0] if measures else "sales"))
-            target_d = matched_dimension or (dimensions[0] if dimensions else "category")
+            profit_measures = [m for m in measures if any(k in m.lower() for k in ["profit", "margin", "income", "net"])]
+            target_m = matched_measure
+            if not target_m:
+                if any(w in q for w in ["profit", "margin", "income"]) and profit_measures:
+                    target_m = profit_measures[0]
+                elif measures:
+                    target_m = measures[0]
+                else:
+                    target_m = "sales"
+
+            target_d = matched_dimension or FastAnalyticalParser._find_best_business_dimension(dimensions, temporal_cols)
             sql = f"""
                 SELECT 
-                    {target_d},
-                    SUM({target_m}) AS total_{target_m},
-                    AVG({target_m}) AS avg_{target_m},
+                    "{target_d}",
+                    SUM("{target_m}") AS total_{target_m},
+                    AVG("{target_m}") AS avg_{target_m},
                     COUNT(*) AS transaction_count
                 FROM {table_name}
-                WHERE {target_d} IS NOT NULL
-                GROUP BY {target_d}
+                WHERE "{target_d}" IS NOT NULL
+                GROUP BY "{target_d}"
                 ORDER BY total_{target_m} DESC
                 LIMIT 10
             """
@@ -148,9 +190,9 @@ class FastAnalyticalParser:
                 "measure": target_m,
                 "aggregation": "sum",
                 "chart_type": "bar",
-                "title": f"Strategic Optimization Analysis: {target_m.replace('_', ' ').title()} by {target_d.replace('_', ' ').title()}",
+                "title": f"Business Growth & Profit Focus: {target_m.replace('_', ' ').title()} by {target_d.replace('_', ' ').title()}",
                 "sql": sql.strip(),
-                "explanation": f"Strategic breakdown to identify upside opportunities in {target_m} across {target_d}."
+                "explanation": f"Evaluates {target_m} across {target_d} to determine which fields to concentrate on for maximum profit expansion."
             }
 
         # 0c. Anomalies & Outliers (e.g. "find anomalies", "outliers", "any unusual data")

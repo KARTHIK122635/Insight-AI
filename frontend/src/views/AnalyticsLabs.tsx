@@ -385,10 +385,15 @@ export const AIAnalystView: React.FC<{
   const [input, setInput] = useState('');
   const [copiedSql, setCopiedSql] = useState<string | null>(null);
   const [aiEngineStatus, setAiEngineStatus] = useState<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     api.fetchAIConfig().then(setAiEngineStatus).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -404,10 +409,10 @@ export const AIAnalystView: React.FC<{
   };
 
   const quickStarters = [
-    '📊 Summarize this dataset',
-    '🏆 What are the top 5 performers?',
-    '💡 Recommendations to increase profits',
-    '📈 Show monthly performance trend'
+    '💡 How can I increase profits?',
+    '🎯 Where should I concentrate to grow my business?',
+    '🏆 What are the top performers?',
+    '📊 Summarize this dataset'
   ];
 
   return (
@@ -515,6 +520,7 @@ export const AIAnalystView: React.FC<{
             <span>Executing DuckDB analytical vector calculations and generating insights...</span>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Quick Starters (if less than 3 messages) */}

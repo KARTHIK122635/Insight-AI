@@ -87,3 +87,38 @@ def test_executive_briefing_fallback_and_404():
     briefing = briefing_res.json()
     assert briefing["health_score"] > 0
     assert len(briefing["strategic_takeaways"]) == 3
+
+def test_chatbot_profit_concentration_advice():
+    # Dataset containing high-cardinality customer_id and meaningful sales_channel
+    csv_text = "customer_id,sales_channel,profit,sales\n"
+    for i in range(1, 40):
+        ch = "Online Website" if i % 2 == 0 else "Retail Store"
+        prof = 500 if i % 2 == 0 else -100
+        csv_text += f"CUST-{i:05d},{ch},{prof},{1000 + i * 50}\n"
+
+    up_res = client.post(
+        "/api/datasets/upload",
+        files={"file": ("omnichannel.csv", io.BytesIO(csv_text.encode("utf-8")), "text/csv")}
+    )
+    assert up_res.status_code == 200
+    ds_id = up_res.json()["dataset_id"]
+
+    # Test question asking how to increase profits
+    chat_res = client.post(
+        "/api/chat",
+        json={
+            "question": "💡 How can I increase profits?",
+            "dataset_id": ds_id
+        }
+    )
+    assert chat_res.status_code == 200
+    chat_data = chat_res.json()
+    ans = chat_data["answer"]
+
+    # Must give explicit concentration guidance
+    assert "Where to Concentrate" in ans or "concentrate" in ans.lower()
+    assert "Online Website" in ans
+    assert "Retail Store" in ans
+    # High-cardinality customer_id must NOT be chosen as the concentration field
+    assert "CUST-" not in ans
+

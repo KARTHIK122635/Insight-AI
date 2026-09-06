@@ -12,6 +12,33 @@ def fmt_curr(val: float) -> str:
         return f"${val:,.2f}"
     return f"${val:,.2f}"
 
+def is_id_column(col_name: str) -> bool:
+    c = col_name.lower().strip()
+    id_terms = ["_id", "id", "uuid", "guid", "code", "key", "number", "num", "hash", "ssn", "phone", "email"]
+    return any(c == term or c.endswith(term) or c.startswith(term) for term in id_terms)
+
+def get_best_business_dimension(dimensions: List[str], temporal_cols: List[str] = None) -> str:
+    temp_set = set(t.lower() for t in (temporal_cols or []))
+    candidates = [
+        d for d in dimensions
+        if d.lower() not in temp_set and "date" not in d.lower() and "time" not in d.lower() and not is_id_column(d)
+    ]
+    if not candidates:
+        candidates = [d for d in dimensions if d.lower() not in temp_set and "date" not in d.lower()]
+    if not candidates:
+        return dimensions[0] if dimensions else "category"
+
+    priority_keywords = [
+        "category", "channel", "product", "segment", "region", "market",
+        "mall", "store", "department", "division", "type", "brand", "tier", "gender"
+    ]
+    for kw in priority_keywords:
+        for c in candidates:
+            if kw in c.lower():
+                return c
+
+    return candidates[0]
+
 class BusinessIntelligenceEngine:
     """
     Enterprise Business Intelligence & Strategic Decision Engine.
@@ -89,8 +116,7 @@ class BusinessIntelligenceEngine:
                         trajectory_str = f"contracting ({growth_pct}%)"
 
         # 3. Categorical Concentration & Top Segment
-        non_temp_dims = [d for d in dimensions if d not in temporal_cols and "date" not in d.lower()]
-        top_dim = non_temp_dims[0] if non_temp_dims else (dimensions[0] if dimensions else "category")
+        top_dim = get_best_business_dimension(dimensions, temporal_cols)
         top_seg_name = "N/A"
         top_seg_share = 0.0
         
@@ -156,9 +182,9 @@ class BusinessIntelligenceEngine:
 
         # 6. Formulate 3 Prioritized Action Items
         action_items = [
-            f"Double down on high-yield expansion in **{top_seg_name}** to capitalize on proven market velocity.",
-            f"Enforce price floor discipline to defend **{margin_pct}% margin** against inflationary cost pressure.",
-            f"Broaden secondary market penetration to reduce exposure from the top segment ({top_seg_share}% concentration)."
+            f"Concentrate strategic investment and marketing in **{top_seg_name}** ({top_dim.replace('_', ' ').title()}) to develop your business and maximize profit return.",
+            f"Enforce price floor discipline and eliminate unneeded discounts to defend **{margin_pct}% operating margin** against cost inflation.",
+            f"Cross-sell secondary offerings to customers in **{top_seg_name}** to lift basket size and diversify concentration risk."
         ]
 
         return sanitize_for_json({
@@ -190,6 +216,7 @@ class BusinessIntelligenceEngine:
         """Identify negative-margin items, discount erosion, and revenue leakage points."""
         measures = summary.get("measures", [])
         dimensions = summary.get("dimensions", [])
+        temporal_cols = summary.get("temporal_columns", [])
         if not measures:
             return []
 
@@ -199,7 +226,7 @@ class BusinessIntelligenceEngine:
 
         # 1. Negative or Compressed Margin Leakage
         if sec and any(k in sec.lower() for k in ["profit", "margin", "gain", "net"]):
-            cat_dim = dimensions[0] if dimensions else None
+            cat_dim = get_best_business_dimension(dimensions, temporal_cols)
             if cat_dim:
                 try:
                     leak_sql = f"""
@@ -308,7 +335,7 @@ class BusinessIntelligenceEngine:
         opportunities = []
 
         # 1. High AOV / Under-Penetrated Growth Target
-        cat_dim = dimensions[0]
+        cat_dim = get_best_business_dimension(dimensions, summary.get("temporal_columns", []))
         try:
             opp_sql = f"""
                 SELECT "{cat_dim}" AS seg,
