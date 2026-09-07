@@ -26,12 +26,12 @@ import {
 import * as api from './services/api';
 
 const STUDIO_NAV_ITEMS: NavItem[] = [
+  { id: 'workspace_home', label: 'Upload', icon: 'upload-cloud', badge: 'Upload' },
   { id: 'dashboard', label: 'Executive Command Center', icon: 'layout-dashboard', badge: 'Briefing' },
   { id: 'growth_opportunities', label: 'Growth & Leakage Radar', icon: 'zap', badge: 'Strategic' },
   { id: 'what_if', label: 'Scenario & What-If Planner', icon: 'trending-up', badge: 'Simulation' },
   { id: 'chat', label: 'Executive AI Analyst', icon: 'message-square', badge: 'Decision' },
   { id: 'story_deck', label: 'Board-Ready Presentation', icon: 'presentation', badge: 'Deck' },
-  { id: 'workspace_home', label: 'Data Catalog & Connectors', icon: 'database', badge: 'Catalog' },
   { id: 'descriptive_stats', label: 'Deep Metric Diagnostics', icon: 'binary' },
   { id: 'anomalies', label: 'Risk & Outlier Auditing', icon: 'alert-triangle' },
   { id: 'relationships', label: 'Drivers & Correlation Map', icon: 'network' },

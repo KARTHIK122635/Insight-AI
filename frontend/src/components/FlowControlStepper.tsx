@@ -13,7 +13,7 @@ export const FlowControlStepper: React.FC<FlowControlStepperProps> = ({
   datasetName
 }) => {
   const steps = [
-    { id: 'workspace_home', step: '1', label: 'Data Ingest' },
+    { id: 'workspace_home', step: '1', label: 'Upload' },
     { id: 'dashboard', step: '2', label: 'Executive Command' },
     { id: 'growth_opportunities', step: '3', label: 'Growth & Leakage' },
     { id: 'what_if', step: '4', label: 'Scenario Planner' },
