@@ -53,7 +53,7 @@ export const IntroModal: React.FC<IntroModalProps> = ({
               <h4 className="text-sm font-bold text-white">Dual-Engine Architecture</h4>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Combines <strong className="text-slate-200">DuckDB columnar OLAP</strong> for vectorized in-memory query execution with <strong className="text-slate-200">MongoDB document persistence</strong> for chat history, metadata, and custom chart saving.
+              Combines <strong className="text-slate-200">DuckDB columnar OLAP</strong> for vectorized in-memory query execution with <strong className="text-slate-200">MongoDB document persistence</strong> for dataset metadata, configurations, and custom chart saving.
             </p>
           </div>
 

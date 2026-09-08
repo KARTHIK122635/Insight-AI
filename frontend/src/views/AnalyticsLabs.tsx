@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Icon from '../components/Icon';
 import EChartComponent from '../components/EChartComponent';
 import * as api from '../services/api';
@@ -326,7 +326,9 @@ export const DatasetExplorerGridView: React.FC<{ rows: any[]; columns: string[] 
 };
 
 const renderInlineMarkdown = (text: string, keyPrefix: string): React.ReactNode[] => {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  if (!text) return [];
+  const str = String(text);
+  const parts = str.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return parts.map((part, index) => {
     const key = `${keyPrefix}-${index}`;
     if (part.startsWith('**') && part.endsWith('**')) {
@@ -340,7 +342,9 @@ const renderInlineMarkdown = (text: string, keyPrefix: string): React.ReactNode[
 };
 
 const AssistantMessage: React.FC<{ text: string }> = ({ text }) => {
-  const lines = text.split(/\r?\n/);
+  if (!text) return null;
+  const str = String(text);
+  const lines = str.split(/\r?\n/);
 
   return (
     <div className="space-y-2 leading-relaxed font-sans text-xs">
@@ -381,7 +385,7 @@ export const AIAnalystView: React.FC<{
   loading: boolean;
   onOpenSettings?: () => void;
   datasetSelected?: boolean;
-}> = ({ messages, onSendMessage, loading, onOpenSettings, datasetSelected = true }) => {
+}> = ({ messages = [], onSendMessage, loading, onOpenSettings, datasetSelected = true }) => {
   const [input, setInput] = useState('');
   const [copiedSql, setCopiedSql] = useState<string | null>(null);
   const [aiEngineStatus, setAiEngineStatus] = useState<any>(null);
@@ -454,7 +458,7 @@ export const AIAnalystView: React.FC<{
 
       {/* Messages List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar py-4 space-y-4 pr-1">
-        {messages.map((m, idx) => (
+        {(messages || []).map((m, idx) => (
           <div
             key={idx}
             className={`p-4 rounded-2xl max-w-2xl text-xs space-y-2.5 ${
@@ -465,15 +469,15 @@ export const AIAnalystView: React.FC<{
           >
             <div className="flex items-center justify-between font-semibold text-[10px] uppercase opacity-75">
               <span>{m.role === 'user' ? 'You' : 'InsightAI Business Analyst'}</span>
-              {m.duration_ms !== undefined && (
+              {typeof m.duration_ms === 'number' && (
                 <span className="font-mono text-[10px] text-cyan-400">
                   {m.duration_ms.toFixed(1)}ms DuckDB
                 </span>
               )}
             </div>
 
-            {m.role === 'assistant' ? <AssistantMessage text={m.text} /> : (
-              <div className="leading-relaxed whitespace-pre-wrap font-sans text-xs">{m.text}</div>
+            {m.role === 'assistant' ? <AssistantMessage text={m.text || ''} /> : (
+              <div className="leading-relaxed whitespace-pre-wrap font-sans text-xs">{m.text || ''}</div>
             )}
 
             {m.sql && (

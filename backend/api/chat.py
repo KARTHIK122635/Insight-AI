@@ -42,9 +42,6 @@ def chat_with_analyst(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI Analytics error: {str(e)}")
 
-@router.get("/history/{session_id}")
-def get_chat_history(session_id: str):
-    return {"history": ai_orchestrator.get_history(session_id)}
 
 @router.get("/config")
 def get_ai_config():

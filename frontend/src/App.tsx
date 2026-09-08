@@ -46,6 +46,41 @@ const DEFAULT_WHAT_IF_PARAMS = {
   cost_change_pct: 0,
 };
 
+class TabErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('TabErrorBoundary caught an error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 max-w-xl mx-auto rounded-3xl bg-darkpanel border border-rose-500/30 text-center space-y-4 shadow-2xl my-12">
+          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto text-xl font-bold">
+            ⚠️
+          </div>
+          <h3 className="text-base font-bold text-white">View Display Issue</h3>
+          <p className="text-xs text-slate-400 font-mono bg-black/40 p-3 rounded-xl border border-darkborder truncate">
+            {this.state.error?.message || 'Component failed to render'}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors"
+          >
+            Retry View
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export const App: React.FC = () => {
   const [datasets, setDatasets] = useState<any[]>([]);
   const [activeDatasetId, setActiveDatasetId] = useState<string>('');
@@ -689,6 +724,7 @@ export const App: React.FC = () => {
 
         {/* Main Content View Container */}
         <main className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-darkbg">
+          <TabErrorBoundary key={activeTab}>
           {activeTab === 'workspace_home' && (
             <WorkspaceHomeView
               datasets={datasets}
@@ -818,6 +854,7 @@ export const App: React.FC = () => {
               onOpenSettings={() => setShowSecurityModal(true)}
             />
           )}
+          </TabErrorBoundary>
         </main>
       </div>
 
