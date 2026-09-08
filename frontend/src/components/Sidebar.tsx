@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Top */}
       <div>
         <div className="h-16 flex items-center justify-between px-3.5 border-b border-darkborder">
-          <BrandLogo collapsed={collapsed} size="sm" />
+          <BrandLogo collapsed={collapsed} size="sm" onClick={() => onSelectTab('dashboard')} />
 
           <button
             onClick={onToggleCollapse}

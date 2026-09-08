@@ -4,12 +4,16 @@ interface BrandLogoProps {
   size?: 'sm' | 'md' | 'lg';
   collapsed?: boolean;
   className?: string;
+  showText?: boolean;
+  onClick?: () => void;
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = 'md',
   collapsed = false,
-  className = ''
+  className = '',
+  showText = true,
+  onClick
 }) => {
   const iconPixelSizes = {
     sm: 28,
@@ -19,7 +23,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const iconSize = iconPixelSizes[size];
 
   return (
-    <div className={`flex items-center space-x-3 select-none ${className}`}>
+    <div
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
+      title={onClick ? "Go to Home (Executive Command Center)" : undefined}
+      className={`flex items-center space-x-3 select-none ${onClick ? 'cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all group' : ''} ${className}`}
+    >
       {/* High-Tech Vector Emblem */}
       <div
         className="relative flex-shrink-0 flex items-center justify-center group"
@@ -95,8 +106,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         </svg>
       </div>
 
-      {/* Typography Lockup (hidden when collapsed) */}
-      {!collapsed && (
+      {/* Typography Lockup (hidden when collapsed or showText is false) */}
+      {!collapsed && showText && (
         <div className="flex flex-col min-w-0 leading-tight">
           <div className="flex items-center space-x-1.5">
             <span className="font-extrabold text-[15px] text-white tracking-tight">

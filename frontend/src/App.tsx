@@ -770,6 +770,7 @@ export const App: React.FC = () => {
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
         <Header
           activeTabTitle={activeTabTitle}
+          onGoHome={() => setActiveTab('dashboard')}
           onRefresh={handleUniversalRefresh}
           refreshing={refreshing}
           onTogglePresentation={() => setIsPresentation(!isPresentation)}
