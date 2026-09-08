@@ -8,7 +8,6 @@ import ExecutiveDashboardView from './views/ExecutiveDashboardView';
 import WhatIfAndForecastView from './views/WhatIfAndForecastView';
 import BusinessOpportunitiesView from './views/BusinessOpportunitiesView';
 import StoryDeckView from './views/StoryDeckView';
-import MongoModal from './components/MongoModal';
 import OneLakeModal from './components/OneLakeModal';
 import SQLStudioModal from './components/SQLStudioModal';
 import IntroModal from './components/IntroModal';
@@ -103,7 +102,6 @@ export const App: React.FC = () => {
 
   // Modals Integration State
   const [mongoStatus, setMongoStatus] = useState<any>(null);
-  const [showMongoModal, setShowMongoModal] = useState<boolean>(false);
   const [showOneLakeModal, setShowOneLakeModal] = useState<boolean>(false);
   const [showSQLModal, setShowSQLModal] = useState<boolean>(false);
   const [showIntroModal, setShowIntroModal] = useState<boolean>(false);
@@ -248,6 +246,62 @@ export const App: React.FC = () => {
       setOpportunitiesLoading(false);
     }
   }, []);
+
+  const loadChatHistory = useCallback(async (id: string) => {
+    if (!id) return;
+    try {
+      const res = await api.getChatHistory(id);
+      if (res?.history && res.history.length > 0) {
+        setChatMessages(res.history.map((m: any) => ({
+          role: m.role as 'user' | 'assistant',
+          text: m.text || '',
+          sql: m.sql,
+          followups: m.role === 'assistant' ? [
+            '💡 How can I increase profits?',
+            '🎯 Where should I concentrate to grow my business?',
+            '🏆 What are the top performers?',
+            '📊 Summarize this dataset'
+          ] : undefined
+        })));
+      } else {
+        setChatMessages([
+          {
+            role: 'assistant',
+            text: 'Hello! I am your AI Business Analyst powered by DuckDB In-Memory OLAP and Google Gemini reasoning. Ask me where to concentrate your business resources to see greater profits, or click a suggested starter below.',
+            followups: [
+              '💡 How can I increase profits?',
+              '🎯 Where should I concentrate to grow my business?',
+              '🏆 What are the top performers?',
+              '📊 Summarize this dataset'
+            ]
+          }
+        ]);
+      }
+    } catch (err) {
+      console.warn('Could not load chat history:', err);
+    }
+  }, []);
+
+  const handleClearChatHistory = async () => {
+    if (!activeDatasetId) return;
+    try {
+      await api.clearChatHistory(activeDatasetId);
+      setChatMessages([
+        {
+          role: 'assistant',
+          text: 'Conversation history cleared. How can I help you analyze this dataset?',
+          followups: [
+            '💡 How can I increase profits?',
+            '🎯 Where should I concentrate to grow my business?',
+            '🏆 What are the top performers?',
+            '📊 Summarize this dataset'
+          ]
+        }
+      ]);
+    } catch (err: any) {
+      console.error('Failed to clear chat history:', err);
+    }
+  };
 
   const loadMongoStatus = useCallback(async () => {
     try {
@@ -445,8 +499,17 @@ export const App: React.FC = () => {
       }).catch(console.error);
     } else if (activeTab === 'story_deck' && !storyData && !storyLoading) {
       loadStory(activeDatasetId);
+    } else if (activeTab === 'chat') {
+      loadChatHistory(activeDatasetId);
     }
-  }, [activeTab, activeDatasetId, dashboardData, dashboardLoading, executiveBriefing, briefingLoading, opportunitiesData, opportunitiesLoading, whatIfResult, whatIfLoading, statsData, correlationData, anomalyData, explorerData.rows.length, storyData, storyLoading, loadDashboard, loadExecutiveBriefing, loadOpportunities, loadWhatIf, loadForecast, loadStory]);
+  }, [activeTab, activeDatasetId, dashboardData, dashboardLoading, executiveBriefing, briefingLoading, opportunitiesData, opportunitiesLoading, whatIfResult, whatIfLoading, statsData, correlationData, anomalyData, explorerData.rows.length, storyData, storyLoading, loadDashboard, loadExecutiveBriefing, loadOpportunities, loadWhatIf, loadForecast, loadStory, loadChatHistory]);
+
+  // Load chat history when active dataset changes
+  useEffect(() => {
+    if (activeDatasetId) {
+      loadChatHistory(activeDatasetId);
+    }
+  }, [activeDatasetId, loadChatHistory]);
 
   // Universal Refresh
   const handleUniversalRefresh = async () => {
@@ -691,7 +754,6 @@ export const App: React.FC = () => {
             loadExecutiveBriefing(id);
           }}
           onOpenUpload={() => filePickerRef.current?.click()}
-          onOpenMongoModal={() => setShowMongoModal(true)}
           onOpenAbout={() => setShowAboutModal(true)}
         />
       )}
@@ -742,14 +804,12 @@ export const App: React.FC = () => {
                 if (targetId) loadDashboard(targetId);
               }}
               uploading={uploading}
-              onOpenMongoModal={() => setShowMongoModal(true)}
               onLoadSampleData={handleLoadSampleData}
               onStartBlankReport={handleStartBlankReport}
               onOpenOneLake={() => setShowOneLakeModal(true)}
               onOpenSQLStudio={() => setShowSQLModal(true)}
               onOpenIntro={() => setShowIntroModal(true)}
               onNavigateTab={handleNavigateTab}
-              mongoStatus={mongoStatus}
             />
           )}
 
@@ -852,6 +912,7 @@ export const App: React.FC = () => {
               loading={chatLoading}
               datasetSelected={Boolean(activeDatasetId)}
               onOpenSettings={() => setShowSecurityModal(true)}
+              onClearHistory={handleClearChatHistory}
             />
           )}
           </TabErrorBoundary>
@@ -959,21 +1020,6 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* MongoDB Document Database & Ingestion Modal */}
-      <MongoModal
-        isOpen={showMongoModal}
-        onClose={() => setShowMongoModal(false)}
-        status={mongoStatus}
-        onStatusUpdated={loadMongoStatus}
-        activeDatasetId={activeDatasetId}
-        activeDatasetName={datasetMeta?.name}
-        onDatasetImported={(id) => {
-          loadDatasets();
-          setActiveDatasetId(id);
-          setActiveTab('dashboard');
-          loadDashboard(id);
-        }}
-      />
 
       {/* OneLake Cloud Catalog Modal */}
       <OneLakeModal

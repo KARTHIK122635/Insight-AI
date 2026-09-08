@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from backend.data.store import dataset_store
+from backend.data.mongo_manager import mongo_manager
 from backend.ai.orchestrator import ai_orchestrator
 from backend.ai.gemini_client import gemini_client
 from backend.ai.qwen import qwen_client
@@ -31,6 +32,13 @@ def chat_with_analyst(
     table_name = f"data_{ds['id']}"
     
     try:
+        # Persist user question to MongoDB
+        mongo_manager.save_chat_message(
+            dataset_id=ds["id"],
+            role="user",
+            text=req.question
+        )
+
         response = ai_orchestrator.process_user_query(
             query=req.question,
             dataset_summary=ds["summary"],
@@ -38,9 +46,30 @@ def chat_with_analyst(
             session_id=req.session_id,
             table_name=table_name
         )
+
+        # Persist analyst response to MongoDB
+        mongo_manager.save_chat_message(
+            dataset_id=ds["id"],
+            role="assistant",
+            text=response.get("answer", "Analysis complete."),
+            sql=response.get("sql")
+        )
+
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI Analytics error: {str(e)}")
+
+@router.get("/history/{dataset_id}")
+def get_chat_history(dataset_id: str):
+    """Retrieve persistent conversation history for a dataset from MongoDB."""
+    history = mongo_manager.get_chat_history(dataset_id)
+    return {"history": history}
+
+@router.delete("/history/{dataset_id}")
+def clear_chat_history(dataset_id: str):
+    """Clear conversation history for a dataset from MongoDB."""
+    success = mongo_manager.clear_chat_history(dataset_id)
+    return {"success": success, "message": "Chat history cleared successfully."}
 
 
 @router.get("/config")

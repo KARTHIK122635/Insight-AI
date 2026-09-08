@@ -19,14 +19,12 @@ interface WorkspaceHomeViewProps {
   onDeleteDataset: (id: string) => void;
   onOpenStudio: () => void;
   uploading: boolean;
-  onOpenMongoModal?: () => void;
   onLoadSampleData?: (domainKey?: string) => void;
   onStartBlankReport?: () => void;
   onOpenOneLake?: () => void;
   onOpenSQLStudio?: () => void;
   onOpenIntro?: () => void;
   onNavigateTab?: (tabId: string) => void;
-  mongoStatus?: any;
 }
 
 export const WorkspaceHomeView: React.FC<WorkspaceHomeViewProps> = ({
@@ -37,14 +35,12 @@ export const WorkspaceHomeView: React.FC<WorkspaceHomeViewProps> = ({
   onDeleteDataset,
   onOpenStudio,
   uploading,
-  onOpenMongoModal,
   onLoadSampleData,
   onStartBlankReport,
   onOpenOneLake,
   onOpenSQLStudio,
   onOpenIntro,
-  onNavigateTab,
-  mongoStatus
+  onNavigateTab
 }) => {
   const [sourcesOpen, setSourcesOpen] = useState(true);
   const [recommendedOpen, setRecommendedOpen] = useState(true);

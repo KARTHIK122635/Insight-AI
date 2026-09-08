@@ -1,5 +1,6 @@
 import React from 'react';
 import Icon from './Icon';
+import BrandLogo from './BrandLogo';
 
 export interface NavItem {
   id: string;
@@ -19,7 +20,6 @@ interface SidebarProps {
   activeDatasetId: string;
   onSelectDataset: (id: string) => void;
   onOpenUpload: () => void;
-  onOpenMongoModal?: () => void;
   onOpenAbout?: () => void;
 }
 
@@ -34,7 +34,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeDatasetId,
   onSelectDataset,
   onOpenUpload,
-  onOpenMongoModal,
   onOpenAbout
 }) => {
   return (
@@ -45,29 +44,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Brand Top */}
       <div>
-        <div className="h-16 flex items-center justify-between px-4 border-b border-darkborder">
-          {!collapsed && (
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center text-white font-black text-sm shadow-md">
-                IA
-              </div>
-              <div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="font-extrabold text-sm text-white tracking-tight">InsightAI</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    PRO
-                  </span>
-                </div>
-                <div className="text-[10px] text-slate-400">Intelligence Platform</div>
-              </div>
-            </div>
-          )}
-
-          {collapsed && (
-            <div className="w-8 h-8 mx-auto rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center text-white font-black text-sm">
-              IA
-            </div>
-          )}
+        <div className="h-16 flex items-center justify-between px-3.5 border-b border-darkborder">
+          <BrandLogo collapsed={collapsed} size="sm" />
 
           <button
             onClick={onToggleCollapse}
@@ -160,17 +138,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <Icon name="upload-cloud" className="w-4 h-4 text-indigo-400" />
           {!collapsed && <span>Upload CSV / Excel</span>}
-        </button>
-
-        <button
-          onClick={onOpenMongoModal}
-          className={`w-full flex items-center justify-center space-x-2 py-2 rounded-xl bg-darkpanel border border-darkborder hover:border-emerald-500 text-xs font-semibold text-emerald-300 transition-colors ${
-            collapsed ? 'px-2' : 'px-3'
-          }`}
-          title="Connect MongoDB Database"
-        >
-          <span className="text-sm">🍃</span>
-          {!collapsed && <span>MongoDB Database</span>}
         </button>
       </div>
     </aside>

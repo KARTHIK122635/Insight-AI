@@ -384,8 +384,9 @@ export const AIAnalystView: React.FC<{
   onSendMessage: (msg: string) => void;
   loading: boolean;
   onOpenSettings?: () => void;
+  onClearHistory?: () => void;
   datasetSelected?: boolean;
-}> = ({ messages = [], onSendMessage, loading, onOpenSettings, datasetSelected = true }) => {
+}> = ({ messages = [], onSendMessage, loading, onOpenSettings, onClearHistory, datasetSelected = true }) => {
   const [input, setInput] = useState('');
   const [copiedSql, setCopiedSql] = useState<string | null>(null);
   const [aiEngineStatus, setAiEngineStatus] = useState<any>(null);
@@ -444,16 +445,29 @@ export const AIAnalystView: React.FC<{
           </div>
         </div>
 
-        {onOpenSettings && (
-          <button
-            onClick={onOpenSettings}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-darksubpanel hover:bg-slate-800 border border-darkborder text-xs text-indigo-300 hover:text-white transition-colors"
-            title="Configure Google Gemini API Key or Models"
-          >
-            <Icon name="key" className="w-3.5 h-3.5 text-indigo-400" />
-            <span>AI Key Settings</span>
-          </button>
-        )}
+        <div className="flex items-center space-x-2">
+          {onClearHistory && (
+            <button
+              onClick={onClearHistory}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-darksubpanel hover:bg-rose-950/30 border border-darkborder hover:border-rose-500/30 text-xs text-slate-400 hover:text-rose-300 transition-colors"
+              title="Clear conversation history for this dataset"
+            >
+              <Icon name="trash-2" className="w-3.5 h-3.5 text-slate-400" />
+              <span>Clear History</span>
+            </button>
+          )}
+
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-darksubpanel hover:bg-slate-800 border border-darkborder text-xs text-indigo-300 hover:text-white transition-colors"
+              title="Configure Google Gemini API Key or Models"
+            >
+              <Icon name="key" className="w-3.5 h-3.5 text-indigo-400" />
+              <span>AI Key Settings</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Messages List */}

@@ -196,6 +196,19 @@ class MongoManager:
         
         return [c for c in self.fallback_store["insight_chats"] if c.get("dataset_id") == dataset_id]
 
+    def clear_chat_history(self, dataset_id: str) -> bool:
+        """Remove chat history for a dataset."""
+        if self.connected and self.db is not None:
+            try:
+                self.db["insight_chats"].delete_many({"dataset_id": dataset_id})
+                return True
+            except Exception as e:
+                logger.error(f"Error clearing chat history from MongoDB: {e}")
+        self.fallback_store["insight_chats"] = [
+            c for c in self.fallback_store["insight_chats"] if c.get("dataset_id") != dataset_id
+        ]
+        return True
+
     def save_custom_chart(self, dataset_id: str, chart: Dict[str, Any]) -> bool:
         """Persist user custom chart configuration."""
         chart_doc = {

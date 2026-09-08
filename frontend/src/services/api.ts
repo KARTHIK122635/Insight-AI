@@ -200,6 +200,25 @@ export async function askAIAnalyst(id: string, question: string) {
   });
 }
 
+export async function getChatHistory(id: string) {
+  if (!id) return { history: [] };
+  return requestJson<{ history: Array<{ role: string; text?: string; sql?: string; timestamp?: string }> }>(
+    `/api/chat/history/${id}`,
+    { headers: getAuthHeaders() }
+  );
+}
+
+export async function clearChatHistory(id: string) {
+  if (!id) return { success: true, message: 'No active dataset' };
+  return requestJson<{ success: boolean; message: string }>(
+    `/api/chat/history/${id}`,
+    {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    }
+  );
+}
+
 export async function applyDataCleaning(id: string, action: string) {
   let body: any = {};
   if (action === 'deduplicate') {

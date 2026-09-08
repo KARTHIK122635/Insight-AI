@@ -13,6 +13,7 @@ from backend.ai.prompts import (
 )
 from backend.ai.fast_parser import FastAnalyticalParser
 from backend.data.duckdb_engine import duckdb_engine
+from backend.data.mongo_manager import mongo_manager
 from backend.visualization.specification import EChartsSpecBuilder
 from backend.visualization.recommender import ChartRecommender
 from backend.analytics.root_cause import RootCauseAnalyzer
@@ -372,7 +373,22 @@ class AIOrchestrator:
             self.add_message(session_id, "assistant", cached["answer"])
             return cached
 
-        history = self.get_history(session_id)
+        history = list(self.get_history(session_id))
+        dataset_id = table_name.replace("data_", "") if table_name.startswith("data_") else None
+        if dataset_id:
+            try:
+                mongo_chats = mongo_manager.get_chat_history(dataset_id)
+                if mongo_chats:
+                    prior_chats = [
+                        {"role": m.get("role", "user"), "content": m.get("text", "")}
+                        for m in mongo_chats
+                        if m.get("text") and not (m.get("role") == "user" and m.get("text") == query and m == mongo_chats[-1])
+                    ]
+                    if prior_chats:
+                        history = prior_chats[-6:]
+            except Exception as e:
+                logger.warning(f"Failed to fetch MongoDB chat history for query context: {e}")
+
         domain = dataset_summary.get("domain", "General Analytics")
         columns_list = list(col_profiles.values())
         measures = dataset_summary.get("measures", [])
