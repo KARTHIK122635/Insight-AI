@@ -3,6 +3,7 @@ import Icon from './components/Icon';
 import Header from './components/Header';
 import Sidebar, { NavItem } from './components/Sidebar';
 import FlowControlStepper from './components/FlowControlStepper';
+import WorkspaceHomeView from './views/WorkspaceHomeView';
 import ExecutiveDashboardView from './views/ExecutiveDashboardView';
 import WhatIfAndForecastView from './views/WhatIfAndForecastView';
 import BusinessOpportunitiesView from './views/BusinessOpportunitiesView';
@@ -24,6 +25,7 @@ import {
 import * as api from './services/api';
 
 const STUDIO_NAV_ITEMS: NavItem[] = [
+  { id: 'workspace_home', label: 'Upload', icon: 'upload-cloud', badge: 'Home' },
   { id: 'dashboard', label: 'Executive Command Center', icon: 'layout-dashboard', badge: 'Briefing' },
   { id: 'growth_opportunities', label: 'Growth & Leakage Radar', icon: 'zap', badge: 'Strategic' },
   { id: 'what_if', label: 'Scenario & What-If Planner', icon: 'trending-up', badge: 'Simulation' },
@@ -81,7 +83,7 @@ class TabErrorBoundary extends React.Component<{ children: React.ReactNode }, { 
 export const App: React.FC = () => {
   const [datasets, setDatasets] = useState<any[]>([]);
   const [activeDatasetId, setActiveDatasetId] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [activeTab, setActiveTab] = useState<string>('workspace_home');
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [isPresentation, setIsPresentation] = useState<boolean>(false);
   const [uploading, setUploading] = useState<boolean>(false);
@@ -595,7 +597,7 @@ export const App: React.FC = () => {
       await loadDatasets();
       if (activeDatasetId === id) {
         setActiveDatasetId('');
-        setActiveTab('dashboard');
+        setActiveTab('workspace_home');
       }
     } catch (err: any) {
       alert(`Delete error: ${err.message}`);
@@ -770,7 +772,7 @@ export const App: React.FC = () => {
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
         <Header
           activeTabTitle={activeTabTitle}
-          onGoHome={() => setActiveTab('dashboard')}
+          onGoHome={() => setActiveTab('workspace_home')}
           onRefresh={handleUniversalRefresh}
           refreshing={refreshing}
           onTogglePresentation={() => setIsPresentation(!isPresentation)}
@@ -784,7 +786,7 @@ export const App: React.FC = () => {
           onLogout={handleLogout}
         />
 
-        {/* 5-Step Analytical Pipeline Flow Control Stepper */}
+        {/* Analytical Pipeline Flow Control Stepper */}
         <FlowControlStepper
           activeTab={activeTab}
           onSelectTab={setActiveTab}
@@ -794,6 +796,31 @@ export const App: React.FC = () => {
         {/* Main Content View Container */}
         <main className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-darkbg">
           <TabErrorBoundary key={activeTab}>
+          {activeTab === 'workspace_home' && (
+            <WorkspaceHomeView
+              datasets={datasets}
+              activeDatasetId={activeDatasetId}
+              onSelectDataset={(id) => {
+                setActiveDatasetId(id);
+                setWhatIfResult(null);
+                loadDashboard(id);
+              }}
+              onUploadFile={handleUploadFile}
+              onDeleteDataset={handleDeleteDataset}
+              onOpenStudio={() => {
+                setActiveTab('dashboard');
+                const targetId = activeDatasetId || (datasets.length > 0 ? datasets[0].id : null);
+                if (targetId) loadDashboard(targetId);
+              }}
+              uploading={uploading}
+              onLoadSampleData={handleLoadSampleData}
+              onStartBlankReport={handleStartBlankReport}
+              onOpenOneLake={() => setShowOneLakeModal(true)}
+              onOpenSQLStudio={() => setShowSQLModal(true)}
+              onOpenIntro={() => setShowIntroModal(true)}
+              onNavigateTab={handleNavigateTab}
+            />
+          )}
 
           {activeTab === 'dashboard' && (
             <ExecutiveDashboardView

@@ -28,7 +28,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
-      title={onClick ? "Go to Home (Executive Command Center)" : undefined}
+      title={onClick ? "Go to Home (Upload)" : undefined}
       className={`flex items-center space-x-3 select-none ${onClick ? 'cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all group' : ''} ${className}`}
     >
       {/* High-Tech Vector Emblem */}
