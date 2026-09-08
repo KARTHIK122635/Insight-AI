@@ -22,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTabTitle,
   onRefresh,
   refreshing,
+  onGoHome,
   onTogglePresentation,
   isPresentation,
   onOpenCustomChartModal,
@@ -34,10 +35,22 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="h-16 bg-[#0B0F19] border-b border-slate-800/80 px-6 flex items-center justify-between z-20 flex-shrink-0">
-      {/* Left: Active workspace title */}
+      {/* Left: Active workspace title & InsightAI Home Trigger */}
       <div className="flex items-center space-x-3">
-        <BrandLogo size="sm" showText={false} onClick={onGoHome} />
-        <div className="h-5 w-px bg-slate-800 hidden sm:block" />
+        <div
+          onClick={onGoHome}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onGoHome && onGoHome()}
+          className="flex items-center space-x-2 cursor-pointer hover:opacity-90 active:scale-95 transition-all select-none"
+          title="Go to Home (Upload)"
+        >
+          <BrandLogo size="sm" showText={false} onClick={onGoHome} />
+          <span className="font-extrabold text-sm text-white tracking-tight hidden sm:inline-block">
+            Insight<span className="bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">AI</span>
+          </span>
+        </div>
+        <div className="h-5 w-px bg-slate-800" />
         <h1 className="text-sm font-semibold text-white tracking-tight flex items-center space-x-2">
           <span>{activeTabTitle}</span>
         </h1>

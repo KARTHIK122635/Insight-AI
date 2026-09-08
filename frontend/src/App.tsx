@@ -1041,7 +1041,7 @@ export const App: React.FC = () => {
       <SQLStudioModal
         isOpen={showSQLModal}
         onClose={() => setShowSQLModal(false)}
-        activeDatasetId={activeDatasetId}
+        datasetName={datasetMeta?.name}
       />
 
       {/* Platform Architecture & Intro Guide Modal */}
@@ -1055,6 +1055,7 @@ export const App: React.FC = () => {
       <AboutModal
         isOpen={showAboutModal}
         onClose={() => setShowAboutModal(false)}
+        datasetMeta={datasetMeta}
         mongoStatus={mongoStatus}
       />
 

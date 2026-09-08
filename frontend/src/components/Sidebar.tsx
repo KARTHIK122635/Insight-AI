@@ -59,7 +59,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Top Upload Action Button */}
         <div className="p-3 border-b border-darkborder/60">
           <button
-            onClick={onOpenUpload}
+            onClick={() => {
+              onSelectTab('workspace_home');
+              onOpenUpload();
+            }}
             className={`w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md hover:shadow-indigo-500/25 text-xs font-bold transition-all duration-200 group ${
               collapsed ? 'px-2' : 'px-3'
             }`}
