@@ -50,8 +50,13 @@ from backend.data.store import dataset_store
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    dataset_store.purge_demo_datasets()
-    logger.info("InsightAI enterprise analytics engine started with clean state (0 preloaded datasets & legacy demo data purged).")
+    if len(dataset_store.datasets) == 0:
+        try:
+            from backend.api.datasets import load_sample_dataset
+            load_sample_dataset("finance", identity=None)
+            logger.info("InsightAI enterprise analytics engine booted with verified financial portfolio sample data.")
+        except Exception as e:
+            logger.warning(f"Default dataset preload skipped: {e}")
     yield
 
 
@@ -130,7 +135,14 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 def serve_ui():
     index_file = static_dir / "index.html"
     if index_file.exists():
-        return FileResponse(str(index_file))
+        return FileResponse(
+            str(index_file),
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     return {"message": "InsightAI API is operational. Static UI is loading..."}
 
 if __name__ == "__main__":

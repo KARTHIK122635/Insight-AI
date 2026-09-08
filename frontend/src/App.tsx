@@ -3,7 +3,6 @@ import Icon from './components/Icon';
 import Header from './components/Header';
 import Sidebar, { NavItem } from './components/Sidebar';
 import FlowControlStepper from './components/FlowControlStepper';
-import WorkspaceHomeView from './views/WorkspaceHomeView';
 import ExecutiveDashboardView from './views/ExecutiveDashboardView';
 import WhatIfAndForecastView from './views/WhatIfAndForecastView';
 import BusinessOpportunitiesView from './views/BusinessOpportunitiesView';
@@ -25,7 +24,6 @@ import {
 import * as api from './services/api';
 
 const STUDIO_NAV_ITEMS: NavItem[] = [
-  { id: 'workspace_home', label: 'Upload', icon: 'upload-cloud', badge: 'Upload' },
   { id: 'dashboard', label: 'Executive Command Center', icon: 'layout-dashboard', badge: 'Briefing' },
   { id: 'growth_opportunities', label: 'Growth & Leakage Radar', icon: 'zap', badge: 'Strategic' },
   { id: 'what_if', label: 'Scenario & What-If Planner', icon: 'trending-up', badge: 'Simulation' },
@@ -83,7 +81,7 @@ class TabErrorBoundary extends React.Component<{ children: React.ReactNode }, { 
 export const App: React.FC = () => {
   const [datasets, setDatasets] = useState<any[]>([]);
   const [activeDatasetId, setActiveDatasetId] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<string>('workspace_home');
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [isPresentation, setIsPresentation] = useState<boolean>(false);
   const [uploading, setUploading] = useState<boolean>(false);
@@ -174,11 +172,21 @@ export const App: React.FC = () => {
   const whatIfRequestRef = useRef<Record<string, boolean>>({});
   const forecastRequestRef = useRef<Record<string, boolean>>({});
 
-  // Load initial datasets list
+  // Load initial datasets list with auto-bootstrap for instant live dashboard
   const loadDatasets = useCallback(async () => {
     try {
       const data = await api.fetchDatasets();
-      const list = data.datasets || [];
+      let list = data.datasets || [];
+      if (list.length === 0) {
+        try {
+          const sample = await api.loadSampleDataset('finance');
+          if (sample?.dataset_id) {
+            list = [{ id: sample.dataset_id, name: sample.dataset_name || 'Financial Portfolio Transactions', domain: 'finance' }];
+          }
+        } catch (e) {
+          console.warn('Auto sample load:', e);
+        }
+      }
       setDatasets(list);
       if (list.length > 0 && !activeDatasetId) {
         setActiveDatasetId(list[0].id);
@@ -587,7 +595,7 @@ export const App: React.FC = () => {
       await loadDatasets();
       if (activeDatasetId === id) {
         setActiveDatasetId('');
-        setActiveTab('workspace_home');
+        setActiveTab('dashboard');
       }
     } catch (err: any) {
       alert(`Delete error: ${err.message}`);
@@ -775,43 +783,16 @@ export const App: React.FC = () => {
           onLogout={handleLogout}
         />
 
-        {/* 6-Step Analytical Pipeline Flow Control Stepper (Studio Labs) */}
-        {activeTab !== 'workspace_home' && (
-          <FlowControlStepper
-            activeTab={activeTab}
-            onSelectTab={setActiveTab}
-            datasetName={datasetMeta?.name}
-          />
-        )}
+        {/* 5-Step Analytical Pipeline Flow Control Stepper */}
+        <FlowControlStepper
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          datasetName={datasetMeta?.name}
+        />
 
         {/* Main Content View Container */}
         <main className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-darkbg">
           <TabErrorBoundary key={activeTab}>
-          {activeTab === 'workspace_home' && (
-            <WorkspaceHomeView
-              datasets={datasets}
-              activeDatasetId={activeDatasetId}
-              onSelectDataset={(id) => {
-                setActiveDatasetId(id);
-                setWhatIfResult(null);
-                loadDashboard(id);
-              }}
-              onUploadFile={handleUploadFile}
-              onDeleteDataset={handleDeleteDataset}
-              onOpenStudio={() => {
-                setActiveTab('dashboard');
-                const targetId = activeDatasetId || (datasets.length > 0 ? datasets[0].id : null);
-                if (targetId) loadDashboard(targetId);
-              }}
-              uploading={uploading}
-              onLoadSampleData={handleLoadSampleData}
-              onStartBlankReport={handleStartBlankReport}
-              onOpenOneLake={() => setShowOneLakeModal(true)}
-              onOpenSQLStudio={() => setShowSQLModal(true)}
-              onOpenIntro={() => setShowIntroModal(true)}
-              onNavigateTab={handleNavigateTab}
-            />
-          )}
 
           {activeTab === 'dashboard' && (
             <ExecutiveDashboardView

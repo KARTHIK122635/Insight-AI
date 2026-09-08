@@ -1,5 +1,6 @@
 import React from 'react';
 import Icon from './Icon';
+import BrandLogo from './BrandLogo';
 
 interface HeaderProps {
   activeTabTitle: string;
@@ -34,7 +35,9 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="h-16 bg-[#0B0F19] border-b border-slate-800/80 px-6 flex items-center justify-between z-20 flex-shrink-0">
       {/* Left: Active workspace title */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3">
+        <BrandLogo size="sm" showText={false} />
+        <div className="h-5 w-px bg-slate-800 hidden sm:block" />
         <h1 className="text-sm font-semibold text-white tracking-tight flex items-center space-x-2">
           <span>{activeTabTitle}</span>
         </h1>
