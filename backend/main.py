@@ -8,7 +8,7 @@ from pathlib import Path
 project_root = str(Path(__file__).parent.parent)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -130,6 +130,37 @@ assets_dir = static_dir / "assets"
 assets_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+@app.get("/favicon.svg")
+def serve_favicon_svg():
+    f = static_dir / "favicon.svg"
+    if f.exists():
+        return FileResponse(str(f), media_type="image/svg+xml")
+    return Response(status_code=404)
+
+@app.get("/favicon.ico")
+def serve_favicon_ico():
+    f = static_dir / "favicon.ico"
+    if f.exists():
+        return FileResponse(str(f), media_type="image/x-icon")
+    f_svg = static_dir / "favicon.svg"
+    if f_svg.exists():
+        return FileResponse(str(f_svg), media_type="image/svg+xml")
+    return Response(status_code=404)
+
+@app.get("/favicon.png")
+def serve_favicon_png():
+    f = static_dir / "favicon.png"
+    if f.exists():
+        return FileResponse(str(f), media_type="image/png")
+    return Response(status_code=404)
+
+@app.get("/logo.svg")
+def serve_logo_svg():
+    f = static_dir / "logo.svg"
+    if f.exists():
+        return FileResponse(str(f), media_type="image/svg+xml")
+    return Response(status_code=404)
 
 @app.get("/")
 def serve_ui():
